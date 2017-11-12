@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeRefactoring2", "CodeRef
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeRefactoring2.Vsix", "CodeRefactoring2\CodeRefactoring2.Vsix\CodeRefactoring2.Vsix.csproj", "{EB6987C1-E0D8-452C-9FD2-CF25128B1DD2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeRefactoring2.Tests", "CodeRefactoring2.Tests\CodeRefactoring2.Tests.csproj", "{DBCAD071-0B6B-4661-9CB3-BF1332474BD6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{EB6987C1-E0D8-452C-9FD2-CF25128B1DD2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EB6987C1-E0D8-452C-9FD2-CF25128B1DD2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EB6987C1-E0D8-452C-9FD2-CF25128B1DD2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DBCAD071-0B6B-4661-9CB3-BF1332474BD6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DBCAD071-0B6B-4661-9CB3-BF1332474BD6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DBCAD071-0B6B-4661-9CB3-BF1332474BD6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DBCAD071-0B6B-4661-9CB3-BF1332474BD6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,11 +1,17 @@
 ﻿using System;
 using System.ComponentModel;
+using System.ComponentModel.Composition;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.IO;
 using System.Runtime.InteropServices;
+using EnvDTE;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.VisualBasic.Syntax;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.LanguageServices;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -54,6 +60,19 @@ namespace CodeRefactoring2.Vsix
             // initialization is the Initialize method.
         }
 
+        public static DTE Dte;
+
+        public static string[] ReadLogFile(string path)
+        {
+            var logLines = File.ReadAllLines(path);
+            foreach (var logLine in logLines)
+            {
+            }
+
+            return new string[5];
+
+        }
+
         #region Package Members
 
         /// <summary>
@@ -62,9 +81,22 @@ namespace CodeRefactoring2.Vsix
         /// </summary>
         protected override void Initialize()
         {
+            //GetService(typeof(Microsoft.VisualStudio.ComponentModelHost))
+            //((IVsUIShell)GetService(typeof(IServiceProvider)))
+            //Microsoft.VisualStudio.Services.IVsCodeContainerProviderService u;
+            //Microsoft.VisualStudio.Services.SVsCodeContainerProviderService i;i
+            //var service = ((SVsComponentModelHost)this.GetService(typeof(SVsComponentModelHost)));
+
+            Dte = GetService<DTE>();
+
             AnalyzeLog.Initialize(this);
             base.Initialize();
             CodeRefactoring2.Vsix.ToolWindow1Command.Initialize(this);
+        }
+
+        private T GetService<T>()
+        {
+            return ((T)base.GetService(typeof(T)));
         }
 
         #endregion

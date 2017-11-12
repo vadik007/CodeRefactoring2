@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:vsix="clr-namespace:CodeRefactoring2.Vsix"
              Background="{DynamicResource VsBrush.Window}"
              Foreground="{DynamicResource VsBrush.WindowText}"
              mc:Ignorable="d"
@@ -10,13 +11,12 @@
              Name="MyToolWindow">
     <Grid>
         <StackPanel Orientation="Vertical">
-            <TextBlock Margin="10" HorizontalAlignment="Center">ToolWindow1</TextBlock>
-            <Button Content="Click me!" Click="button1_Click" Width="120" Height="80" Name="button1"/>
-            <ListBox ItemsSource="{Binding Mode=OneWay}">
-                <ItemsPanelTemplate>
-                    <TextBlock></TextBlock>
-                </ItemsPanelTemplate>
-            </ListBox>
+            <StackPanel Orientation="Horizontal">
+                <Button Content="Load log" Click="button1_Click" Name="button1"/>
+                <Button Content="thing2" Click="button1_Click" Name="button2"/>
+            </StackPanel>
+            <!--x:Static vsix:ToolWindow1Control-->
+            <ListBox ItemsSource="{Binding Path=Items}" />
         </StackPanel>
     </Grid>
 </UserControl>
