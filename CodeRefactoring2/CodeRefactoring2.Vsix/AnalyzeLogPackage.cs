@@ -96,7 +96,7 @@ namespace CodeRefactoring2.Vsix
 
         private T GetService<T>()
         {
-            return ((T)base.GetService(typeof(T)));
+            return (T)base.GetService(typeof(T));
         }
 
         #endregion
