@@ -19,7 +19,7 @@ namespace CodeRefactoring2.Vsix
 
         public Dictionary<int, string> FilesDictionary { get; private set; } = new Dictionary<int, string>();
 
-        private Regex _scopeRegex = new Regex("\"(.*)+?\"", RegexOptions.Compiled);
+        private Regex _scopeRegex = new Regex("\"(.*)?\"", RegexOptions.Compiled);
 
         public SourceFileHasher()
         {
@@ -52,13 +52,13 @@ namespace CodeRefactoring2.Vsix
                 var line = lines[lineN];
                 foreach (Match match in _scopeRegex.Matches(line))
                 {
-//                    var sourceEntry = new SourceEntry(
-//                        fileHash: fileHash,
-//                        lineNumber: lineN, 
-//                        lineOffset: match.Index,
-//                        thisHash: RemoveQuotes(match.Value).GetHashCode(),
-//                        previousHash: prevSourceEntry?.ThisHash ?? 0, // o-0~o
-//                        nextHash: 0); // o-0~o
+                    //                    var sourceEntry = new SourceEntry(
+                    //                        fileHash: fileHash,
+                    //                        lineNumber: lineN, 
+                    //                        lineOffset: match.Index,
+                    //                        thisHash: RemoveQuotes(match.Value).GetHashCode(),
+                    //                        previousHash: prevSourceEntry?.ThisHash ?? 0, // o-0~o
+                    //                        nextHash: 0); // o-0~o
 
                     //if (prevSourceEntry != null) prevSourceEntry.NextHash = sourceEntry.ThisHash; // o-0-o
 

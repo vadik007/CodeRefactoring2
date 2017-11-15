@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.RegularExpressions;
 using CodeRefactoring2.Vsix;
 using NUnit.Framework;
 
@@ -39,9 +40,9 @@ namespace CodeRefactoring2.Tests
         {
             var sourceFileHasher = new SourceFileHasher();
             var stopwatch = Stopwatch.StartNew();
-            sourceFileHasher.ProcessFile(@"d:\congen\cnt\agent-library\agentskills\agentskills\informationagent.fetchnextract\fetchnextract.cs");
+            sourceFileHasher.ProcessFile(@"C:\CONGEN\cnt\agent-library\AgentSkills\AgentSkills\InformationAgent.FetchnExtract\fetchnextract.cs");
             stopwatch.Stop();
-            Console.WriteLine(stopwatch);
+            Console.WriteLine(stopwatch.Elapsed);
             Assert.Pass();
         }
 
@@ -51,6 +52,26 @@ namespace CodeRefactoring2.Tests
             Console.WriteLine(SourceFileHasher.RemoveQuotes("\"\""));
             
         }
+
+        [Test]
+        public void Test()
+        {
+            Regex _scopeRegex = new Regex("\"(.*)+?\"", RegexOptions.Compiled);
+
+            foreach (Match match in _scopeRegex.Matches("            int.TryParse(ConfigurationManager.AppSettings[\"ParameterSetStorePeriod\"], out _parameterSetStorePeriod);"))
+            {
+                Console.WriteLine(match);
+            }
+            /*
+             Catastrophic backtracking has been detected and the execution of your expression has been halted. To find out more what this is, please read the following article: Runaway Regular Expressions
+
+I recommend you launch the debugger in the menu to the left and analyze the data to find out the cause.
+
+            http://www.regular-expressions.info/catastrophic.html
+             */
+        }
+
+
 
     }
 }
