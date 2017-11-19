@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using CodeRefactoring2.Vsix;
 using NUnit.Framework;
+using System.Xml.Serialization;
 
 namespace CodeRefactoring2.Tests
 {
@@ -47,10 +49,42 @@ namespace CodeRefactoring2.Tests
         }
 
         [Test]
+        public void AlTokenizationTest()
+        {
+            var sourceFileHasher = new SourceFileHasher();
+            var stopwatch = Stopwatch.StartNew();
+            foreach (var file in Directory.GetFiles(@"C:\CONGEN\cnt\agent-library\","*.cs",SearchOption.AllDirectories))
+            {
+                sourceFileHasher.ProcessFile(file);
+            }
+
+            sourceFileHasher.SaveToFile("save.xml");
+
+            stopwatch.Stop();
+            Console.WriteLine(stopwatch.Elapsed);
+            Assert.Pass();
+        }
+
+        [Test]
         public void RemoveQuotesTest()
         {
             Console.WriteLine(SourceFileHasher.RemoveQuotes("\"\""));
             
+        }
+
+        [Test]
+        public void EntitiesTest()
+        {
+            var xmlSerializer = new XmlSerializer(typeof(SourceEntry));
+
+            var memoryStream = new MemoryStream();
+            xmlSerializer.Serialize(memoryStream, new SourceEntry(0,0,0,0,0,0));
+
+            memoryStream.Seek(
+                0,
+                SeekOrigin.Begin);
+
+            Console.WriteLine(memoryStream);
         }
 
         [Test]

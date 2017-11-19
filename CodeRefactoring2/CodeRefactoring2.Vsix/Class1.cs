@@ -7,22 +7,61 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 
 namespace CodeRefactoring2.Vsix
 {
+     
     public class SourceFileHasher
     {
+        [Serializable]
+        public class SourceFileHasherPersistencePart
+        {
+            public SortedDictionary<int, List<SourceEntry>> Entries { get; set; } = new SortedDictionary<int, List<SourceEntry>>();
+            public Dictionary<int, string> FilesDictionary { get; private set; } = new Dictionary<int, string>();
+
+        }
+
         public int FileHash;
 
-        public SortedDictionary<int, List<SourceEntry>> Entries { get; set; } 
-            = new SortedDictionary<int, List<SourceEntry>>();
+        SourceFileHasherPersistencePart PersistencePart = new SourceFileHasherPersistencePart();
 
-        public Dictionary<int, string> FilesDictionary { get; private set; } = new Dictionary<int, string>();
-
+        private XmlSerializer _serializer = new XmlSerializer(typeof(SourceFileHasherPersistencePart));
         private Regex _scopeRegex = new Regex("\"(.*)?\"", RegexOptions.Compiled);
 
         public SourceFileHasher()
         {
+        }
+
+        public void RestoreFromFile(string file)
+        {
+            try
+            {
+                using (var fileStream = File.OpenRead(file))
+                {
+                    var deserialized = _serializer.Deserialize(fileStream);
+                    PersistencePart = (SourceFileHasherPersistencePart)deserialized;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
+
+        public void SaveToFile(string file)
+        {
+            try
+            {
+                using (var fileStream = File.OpenRead(file))
+                {
+                    _serializer.Serialize(fileStream, PersistencePart);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
         }
 
         public static string RemoveQuotes(string quotedString)
@@ -38,7 +77,7 @@ namespace CodeRefactoring2.Vsix
             }
 
             int fileHash = filePath.GetHashCode();
-            FilesDictionary.Add(fileHash, filePath);
+            PersistencePart.FilesDictionary.Add(fileHash, filePath);
 
             var logTokenizer = new WhiteSpaceLogTokenizer();
 
@@ -52,18 +91,18 @@ namespace CodeRefactoring2.Vsix
                 var line = lines[lineN];
                 foreach (Match match in _scopeRegex.Matches(line))
                 {
-                    //                    var sourceEntry = new SourceEntry(
-                    //                        fileHash: fileHash,
-                    //                        lineNumber: lineN, 
-                    //                        lineOffset: match.Index,
-                    //                        thisHash: RemoveQuotes(match.Value).GetHashCode(),
-                    //                        previousHash: prevSourceEntry?.ThisHash ?? 0, // o-0~o
-                    //                        nextHash: 0); // o-0~o
+                    var sourceEntry = new SourceEntry(
+                        fileHash: fileHash,
+                        lineNumber: lineN,
+                        lineOffset: match.Index,
+                        thisHash: RemoveQuotes(match.Value).GetHashCode(),
+                        previousHash: prevSourceEntry?.ThisHash ?? 0, // o-0~o
+                        nextHash: 0); // o-0~o
 
-                    //if (prevSourceEntry != null) prevSourceEntry.NextHash = sourceEntry.ThisHash; // o-0-o
+                    if (prevSourceEntry != null) prevSourceEntry.NextHash = sourceEntry.ThisHash; // o-0-o
 
-                    //AddSourceEntry(sourceEntry);
-                    //prevSourceEntry = sourceEntry; // current entry is finished
+                    AddSourceEntry(sourceEntry);
+                    prevSourceEntry = sourceEntry; // current entry is finished
                     //match.
                 }
             }
@@ -72,19 +111,25 @@ namespace CodeRefactoring2.Vsix
         private void AddSourceEntry(SourceEntry sourceEntry)
         {
             Console.WriteLine($"adding {sourceEntry}");
-            if (!Entries.ContainsKey(sourceEntry.ThisHash))
+            if (!PersistencePart.Entries.ContainsKey(sourceEntry.ThisHash))
             {
-                Entries.Add(sourceEntry.ThisHash, new List<SourceEntry>{sourceEntry});
+                PersistencePart.Entries.Add(sourceEntry.ThisHash, new List<SourceEntry>{sourceEntry});
             }
             else
             {
-                Entries[sourceEntry.ThisHash].Add(sourceEntry);
+                PersistencePart.Entries[sourceEntry.ThisHash].Add(sourceEntry);
             }
         }
 
     }
+    [DebuggerDisplay("{FileHash}, {LineNumber}, {LineOffset}, {ThisHash},{NextHash}, {PreviousHash}")]
+    [Serializable]
     public class SourceEntry
     {
+        public SourceEntry()
+        {
+            
+        }
         /// <inheritdoc />
         public SourceEntry(int fileHash, int lineNumber, int lineOffset, int thisHash, int previousHash, int nextHash)
         {
