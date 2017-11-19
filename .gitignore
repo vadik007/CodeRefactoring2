@@ -1,0 +1,7 @@
+/packages/
+/CodeRefactoring2.Tests/bin/
+/CodeRefactoring2/CodeRefactoring2.Vsix/bin/Debug
+/CodeRefactoring2/CodeRefactoring2.Vsix/obj/Debug
+/CodeRefactoring2/CodeRefactoring2/obj/Debug
+/CodeRefactoring2.Tests/obj/Debug
+/.vs/CodeRefactoring2/v15/sqlite3/*.ide
