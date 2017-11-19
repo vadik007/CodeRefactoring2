@@ -106,8 +106,9 @@
   <ItemGroup>
     <Compile Include="AnalyzeLog.cs" />
     <Compile Include="AnalyzeLogPackage.cs" />
-    <Compile Include="Class1.cs" />
+    <Compile Include="SourceEntry.cs" />
     <Compile Include="ILogTokenizer.cs" />
+    <Compile Include="SourceFileHasher.cs" />
     <Compile Include="ToolWindow1.cs" />
     <Compile Include="ToolWindow1Command.cs" />
     <Compile Include="ToolWindow1Control.xaml.cs">

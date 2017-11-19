@@ -51,6 +51,7 @@ namespace CodeRefactoring2.Tests
         [Test]
         public void AlTokenizationTest()
         {
+            const string tempSavePath = "c:\\temp\\save.xml";
             var sourceFileHasher = new SourceFileHasher();
             var stopwatch = Stopwatch.StartNew();
             foreach (var file in Directory.GetFiles(@"C:\CONGEN\cnt\agent-library\","*.cs",SearchOption.AllDirectories))
@@ -58,9 +59,16 @@ namespace CodeRefactoring2.Tests
                 sourceFileHasher.ProcessFile(file);
             }
 
-            sourceFileHasher.SaveToFile("save.xml");
+            sourceFileHasher.SaveToFile(tempSavePath);
 
             stopwatch.Stop();
+
+            var restoreFileHasher = new SourceFileHasher();
+            restoreFileHasher.RestoreFromFile(tempSavePath);
+
+            Assert.AreEqual(restoreFileHasher.Entries,sourceFileHasher.Entries);
+            Assert.AreEqual(restoreFileHasher.FilesDictionary, sourceFileHasher.FilesDictionary);
+
             Console.WriteLine(stopwatch.Elapsed);
             Assert.Pass();
         }
@@ -105,7 +113,20 @@ I recommend you launch the debugger in the menu to the left and analyze the data
              */
         }
 
+        [Test]
+        public void CorrelateLogsTest()
+        {
+            var logLines = File.ReadAllLines("out1.txt");
 
+            var tokenizer = new WhiteSpaceLogTokenizer();
+
+            foreach (var logLine in logLines)
+            {
+                var tokenizedLine = tokenizer.TokenizeLine(logLine);
+            }
+
+
+        }
 
     }
 }

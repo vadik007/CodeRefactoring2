@@ -1,28 +1,78 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
 
 namespace CodeRefactoring2.Vsix
 {
-     
     public class SourceFileHasher
     {
         [Serializable]
         public class SourceFileHasherPersistencePart
         {
+            [XmlIgnore]
             public SortedDictionary<int, List<SourceEntry>> Entries { get; set; } = new SortedDictionary<int, List<SourceEntry>>();
+            [XmlIgnore]
             public Dictionary<int, string> FilesDictionary { get; private set; } = new Dictionary<int, string>();
 
+            public int I { get; set; } = 1;
+
+            [XmlArray]
+            public SourceEntry[] EntriesBackField
+            {
+                get
+                {
+                    return Entries.SelectMany(_ => _.Value)
+                        .ToArray();
+                }
+                set
+                {
+                    foreach (var sourceEntry in value)
+                    {
+                        AddSourceEntry(sourceEntry);
+                        //Entries.Add(sourceEntry.ThisHash, sourceEntry);
+                    }
+                }
+            }
+
+            private void AddSourceEntry(SourceEntry sourceEntry)
+            {
+                Console.WriteLine($"adding {sourceEntry}");
+                if (!Entries.ContainsKey(sourceEntry.ThisHash))
+                {
+                    Entries.Add(sourceEntry.ThisHash, new List<SourceEntry> { sourceEntry });
+                }
+                else
+                {
+                    Entries[sourceEntry.ThisHash].Add(sourceEntry);
+                }
+            }
+
+            [XmlArray]
+            public MyTuple<int, string>[] FilesDictionaryBackField
+            {
+                set
+                {
+                    foreach (var tuple in value)
+                    {
+                        FilesDictionary.Add(tuple.Item1, tuple.Item2);
+                    }
+                }
+                get
+                {
+                    return FilesDictionary.Select(_ => new MyTuple<int, string>(_.Key,_.Value)).ToArray();
+                }
+            }
         }
 
         public int FileHash;
+
+        public SortedDictionary<int, List<SourceEntry>> Entries => PersistencePart.Entries;
+        public Dictionary<int, string> FilesDictionary => PersistencePart.FilesDictionary;
+
 
         SourceFileHasherPersistencePart PersistencePart = new SourceFileHasherPersistencePart();
 
@@ -53,7 +103,7 @@ namespace CodeRefactoring2.Vsix
         {
             try
             {
-                using (var fileStream = File.OpenRead(file))
+                using (var fileStream = File.Create(file, 1024 * 1024, FileOptions.Asynchronous))
                 {
                     _serializer.Serialize(fileStream, PersistencePart);
                 }
@@ -122,36 +172,25 @@ namespace CodeRefactoring2.Vsix
         }
 
     }
-    [DebuggerDisplay("{FileHash}, {LineNumber}, {LineOffset}, {ThisHash},{NextHash}, {PreviousHash}")]
+
     [Serializable]
-    public class SourceEntry
+    public class MyTuple<T,TK>
     {
-        public SourceEntry()
+        // ReSharper disable once MemberCanBePrivate.Global
+        public MyTuple()
         {
             
         }
-        /// <inheritdoc />
-        public SourceEntry(int fileHash, int lineNumber, int lineOffset, int thisHash, int previousHash, int nextHash)
+        public TK Item2 { get; set; }
+        public T Item1 { get; set; }
+
+        public MyTuple(
+            T t,
+            TK tk)
         {
-            FileHash = fileHash;
-            LineNumber = lineNumber;
-            LineOffset = lineOffset;
-            PreviousHash = previousHash;
-            NextHash = nextHash;
-            ThisHash = thisHash;
+            Item1 = t;
+            Item2 = tk;
         }
 
-        /// <inheritdoc />
-        public override string ToString()
-        {
-            return $"{nameof(FileHash)}: {FileHash}, {nameof(LineNumber)}: {LineNumber}, {nameof(LineOffset)}: {LineOffset}, {nameof(ThisHash)}: {ThisHash}, {nameof(PreviousHash)}: {PreviousHash}, {nameof(NextHash)}: {NextHash}";
-        }
-
-        public int FileHash { get; set; }
-        public int LineNumber { get; set; }
-        public int LineOffset { get; set; }
-        public int ThisHash { get; set; }
-        public int PreviousHash { get; set; }
-        public int NextHash { get; set; }
     }
 }
