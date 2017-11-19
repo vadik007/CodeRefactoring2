@@ -40,7 +40,7 @@ namespace CodeRefactoring2.Vsix
 
             private void AddSourceEntry(SourceEntry sourceEntry)
             {
-                Console.WriteLine($"adding {sourceEntry}");
+                //Console.WriteLine($"adding {sourceEntry}");
                 if (!Entries.ContainsKey(sourceEntry.ThisHash))
                 {
                     Entries.Add(sourceEntry.ThisHash, new List<SourceEntry> { sourceEntry });
@@ -81,6 +81,33 @@ namespace CodeRefactoring2.Vsix
 
         public SourceFileHasher()
         {
+        }
+
+        public IEnumerable<SourceEntry> SearchSequence(
+            List<int> input, int tolerance = 1)
+        {
+            // match buckets [+][-][+][+][+][-]
+            // what file contain the most sequential matches ?
+            //int errCount = 0;
+            //int foundIdx = 0; //how far we were able to find matches
+            //int workIdx = 0; 
+            //while (errCount< tolerance && workIdx < input.Count)
+            //{
+            //    if (Entries.ContainsKey(input[workIdx])) //entry exists
+            //    {
+            //        Entries[input[workIdx]]
+            //    }
+            //}
+
+            List<SourceEntry> buckets = input.SelectMany(key => Entries.ContainsKey(key) ? Entries[key] : Enumerable.Empty<SourceEntry>()).Where(_=>_!=null).ToList();
+
+            var first = buckets.GroupBy(_ => _?.FileHash).OrderBy((_)=>_.Count()).FirstOrDefault() ?? Enumerable.Empty<SourceEntry>();
+            return first;
+        }
+
+        private int GetDistance(SourceEntry entry1, SourceEntry entry2)
+        {
+            return 0;
         }
 
         public void RestoreFromFile(string file)
@@ -160,7 +187,7 @@ namespace CodeRefactoring2.Vsix
 
         private void AddSourceEntry(SourceEntry sourceEntry)
         {
-            Console.WriteLine($"adding {sourceEntry}");
+            //Console.WriteLine($"adding {sourceEntry}");
             if (!PersistencePart.Entries.ContainsKey(sourceEntry.ThisHash))
             {
                 PersistencePart.Entries.Add(sourceEntry.ThisHash, new List<SourceEntry>{sourceEntry});

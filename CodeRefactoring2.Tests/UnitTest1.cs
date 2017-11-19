@@ -13,6 +13,7 @@ namespace CodeRefactoring2.Tests
     [TestFixture]
     public class UnitTest1
     {
+            const string tempSavePath = "c:\\temp\\save.xml";
         [Test]
         public void TestMethod1()
         {
@@ -51,7 +52,6 @@ namespace CodeRefactoring2.Tests
         [Test]
         public void AlTokenizationTest()
         {
-            const string tempSavePath = "c:\\temp\\save.xml";
             var sourceFileHasher = new SourceFileHasher();
             var stopwatch = Stopwatch.StartNew();
             foreach (var file in Directory.GetFiles(@"C:\CONGEN\cnt\agent-library\","*.cs",SearchOption.AllDirectories))
@@ -116,17 +116,37 @@ I recommend you launch the debugger in the menu to the left and analyze the data
         [Test]
         public void CorrelateLogsTest()
         {
-            var logLines = File.ReadAllLines("out1.txt");
+            
+            var logLines = File.ReadAllLines(TestContext.CurrentContext.TestDirectory +"\\out1.txt");
 
             var tokenizer = new WhiteSpaceLogTokenizer();
 
+            var restoreFileHasher = new SourceFileHasher();
+            restoreFileHasher.RestoreFromFile(tempSavePath);
+            
             foreach (var logLine in logLines)
             {
                 var tokenizedLine = tokenizer.TokenizeLine(logLine);
+
+                var sourceEntries = restoreFileHasher.SearchSequence(tokenizedLine.ToList());
+
+                foreach (var sourceEntry in sourceEntries)
+                {
+                    PrintSrcFile(restoreFileHasher.FilesDictionary[sourceEntry.FileHash], sourceEntry.LineNumber);
+                }
             }
-
-
         }
 
+        private void PrintSrcFile(string path, int line)
+        {
+            try
+            {
+                Console.WriteLine(File.ReadAllLines(path)[line]);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
     }
 }
