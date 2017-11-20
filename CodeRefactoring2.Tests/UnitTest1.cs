@@ -141,6 +141,12 @@ I recommend you launch the debugger in the menu to the left and analyze the data
             }
         }
 
+        [Test]
+        public void TestPackMan()
+        {
+            Console.WriteLine(SourceFileHasher.PackMan(new List<int>{1,11},new List<int>{3,1,1,3}));
+        }
+
         private void PrintSrcFile(string path, int line)
         {
             try

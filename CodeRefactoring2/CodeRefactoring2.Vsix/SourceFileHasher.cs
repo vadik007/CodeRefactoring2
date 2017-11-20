@@ -104,9 +104,12 @@ namespace CodeRefactoring2.Vsix
 
             // get file with most continious matches
             //     get with most matches. Files 
-            var mostEntriesFile = PersistencePart.FileToWordsDictionary
-                .Select(fileData => new {MatchCount = fileData.Value.Intersect(input).Count(), fileData})
-                .OrderByDescending(_ => _.MatchCount)
+            var step1 = PersistencePart.FileToWordsDictionary
+                //.GroupBy()
+                .Select(fileData => new {MatchCount = fileData.Value.Intersect(input).Count(), fileData});
+            var step2 = step1
+                .OrderByDescending(_ => _.MatchCount);
+            var mostEntriesFile = step2
                 .FirstOrDefault()?.fileData.Key ?? 0;
 
             Console.WriteLine($"I'm guessing this is {FilesDictionary[mostEntriesFile]}");
@@ -127,6 +130,56 @@ namespace CodeRefactoring2.Vsix
             //        }
             //    }
             //}
+        }
+
+
+        public static int PackMan(List<int> x, List<int> y, int fitness = 1)
+        {
+            List<int> longList;
+            List<int> shortList;
+            int life = 0;
+
+            int l = 0;
+            int s = 0;
+
+            if (x.Count > y.Count)
+            {
+                longList = x;
+                shortList = y;
+            }
+            else
+            {
+                longList = y;
+                shortList = x;
+            }
+            for (int g = 0; g < longList.Count; g++)
+            {
+                while (longList.Count > l)
+                {
+                    while (shortList.Count > s)
+                    {
+                        life += shortList[s] == longList[l] ? +1 : -1;
+                        if (life < fitness)
+                        {
+                            s = 0;
+                            l = g;
+                            life = fitness ;
+                        }
+                        else
+                        {
+                            s++;
+                            if (life >= shortList.Count -1)
+                            {
+                                return life;
+                            }
+                        }
+
+                        l++;
+                    }
+                }
+            }
+
+            return life;
         }
 
         public IEnumerable<SourceEntry> SearchSequence_(
