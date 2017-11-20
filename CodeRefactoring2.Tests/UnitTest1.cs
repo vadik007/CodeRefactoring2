@@ -43,7 +43,7 @@ namespace CodeRefactoring2.Tests
         {
             var sourceFileHasher = new SourceFileHasher();
             var stopwatch = Stopwatch.StartNew();
-            sourceFileHasher.ProcessFile(@"C:\CONGEN\cnt\agent-library\AgentSkills\AgentSkills\InformationAgent.FetchnExtract\fetchnextract.cs");
+            sourceFileHasher.ProcessFile(@"D:\CONGEN\cnt\agent-library\AgentSkills\AgentSkills\InformationAgent.FetchnExtract\fetchnextract.cs");
             stopwatch.Stop();
             Console.WriteLine(stopwatch.Elapsed);
             Assert.Pass();
@@ -54,7 +54,7 @@ namespace CodeRefactoring2.Tests
         {
             var sourceFileHasher = new SourceFileHasher();
             var stopwatch = Stopwatch.StartNew();
-            foreach (var file in Directory.GetFiles(@"C:\CONGEN\cnt\agent-library\","*.cs",SearchOption.AllDirectories))
+            foreach (var file in Directory.GetFiles(@"D:\CONGEN\cnt\agent-library\","*.cs",SearchOption.AllDirectories))
             {
                 sourceFileHasher.ProcessFile(file);
             }
@@ -116,8 +116,12 @@ I recommend you launch the debugger in the menu to the left and analyze the data
         [Test]
         public void CorrelateLogsTest()
         {
-            
-            var logLines = File.ReadAllLines(TestContext.CurrentContext.TestDirectory +"\\out1.txt");
+
+           var logLines = new string[]{ "AgentHostProcess is started",
+                "Service configured on port 8085 of channel http.Server object created",
+                "Execution steps cache initialized, total 22 item(s)" };
+
+        //var logLines = File.ReadAllLines(TestContext.CurrentContext.TestDirectory +"\\out1.txt");
 
             var tokenizer = new WhiteSpaceLogTokenizer();
 

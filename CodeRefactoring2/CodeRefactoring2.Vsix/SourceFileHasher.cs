@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -49,6 +50,15 @@ namespace CodeRefactoring2.Vsix
                 {
                     Entries[sourceEntry.ThisHash].Add(sourceEntry);
                 }
+
+                if (!FileToWordsDictionary.ContainsKey(sourceEntry.FileHash))
+                {
+                    FileToWordsDictionary.Add(sourceEntry.FileHash, new List<int>{sourceEntry.ThisHash});
+                }
+                else
+                {
+                    FileToWordsDictionary[sourceEntry.FileHash].Add(sourceEntry.ThisHash);
+                }
             }
 
             [XmlArray]
@@ -66,6 +76,10 @@ namespace CodeRefactoring2.Vsix
                     return FilesDictionary.Select(_ => new MyTuple<int, string>(_.Key,_.Value)).ToArray();
                 }
             }
+
+            [XmlIgnore]
+            public readonly Dictionary<int, List<int>> FileToWordsDictionary = new Dictionary<int, List<int>>();
+
         }
 
         public int FileHash;
@@ -79,11 +93,43 @@ namespace CodeRefactoring2.Vsix
         private XmlSerializer _serializer = new XmlSerializer(typeof(SourceFileHasherPersistencePart));
         private Regex _scopeRegex = new Regex("\"(.*)?\"", RegexOptions.Compiled);
 
+
         public SourceFileHasher()
         {
         }
 
-        public IEnumerable<SourceEntry> SearchSequence(
+        public IEnumerable<SourceEntry> SearchSequence(List<int> input, int tolerance = 1)
+        {
+            var scoreList = new List<int>();
+
+            // get file with most continious matches
+            //     get with most matches. Files 
+            var mostEntriesFile = PersistencePart.FileToWordsDictionary
+                .Select(fileData => new {MatchCount = fileData.Value.Intersect(input).Count(), fileData})
+                .OrderByDescending(_ => _.MatchCount)
+                .FirstOrDefault()?.fileData.Key ?? 0;
+
+            Console.WriteLine($"I'm guessing this is {FilesDictionary[mostEntriesFile]}");
+
+            //find first SourceEntry with this file hash
+            
+            return Entries
+                .FirstOrDefault(_ => _.Key == input[0] && _.Value.Select(f => f.FileHash).Contains(mostEntriesFile))
+                .Value ?? Enumerable.Empty<SourceEntry>();
+
+            //foreach (var wordHash in input)
+            //{
+            //    if (Entries.ContainsKey(wordHash))
+            //    {
+            //        foreach (SourceEntry sourceEntry in Entries[wordHash].AsReadOnly())
+            //        {
+            //            Entries.First(_=>_.)
+            //        }
+            //    }
+            //}
+        }
+
+        public IEnumerable<SourceEntry> SearchSequence_(
             List<int> input, int tolerance = 1)
         {
             // match buckets [+][-][+][+][+][-]
@@ -99,9 +145,11 @@ namespace CodeRefactoring2.Vsix
             //    }
             //}
 
-            List<SourceEntry> buckets = input.SelectMany(key => Entries.ContainsKey(key) ? Entries[key] : Enumerable.Empty<SourceEntry>()).Where(_=>_!=null).ToList();
+            var buckets = input.SelectMany(key =>Entries.ContainsKey(key) ? Entries[key] : Enumerable.Empty<SourceEntry>());
+            var stage2 = buckets.Where(_=>_!=null).ToList();
 
-            var first = buckets.GroupBy(_ => _?.FileHash).OrderBy((_)=>_.Count()).FirstOrDefault() ?? Enumerable.Empty<SourceEntry>();
+            var stage3 = stage2.GroupBy(_ => _?.FileHash).OrderByDescending((_)=>_.Count());
+            var first = stage3.FirstOrDefault() ?? Enumerable.Empty<SourceEntry>();
             return first;
         }
 
