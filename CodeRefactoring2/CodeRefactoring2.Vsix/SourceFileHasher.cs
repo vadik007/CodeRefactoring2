@@ -100,6 +100,20 @@ namespace CodeRefactoring2.Vsix
 
         public IEnumerable<SourceEntry> SearchSequence(List<int> input, int tolerance = 1)
         {
+            foreach (var fileTokenMap in PersistencePart.FileToWordsDictionary)
+            {
+                var entry = FindArrayIndex(input.ToArray(), fileTokenMap.Value.ToArray());
+                if (entry != -1)
+                {
+                    return Entries[input[0]].Where(_ => _.FileHash == entry /*&& _.NextHash == input[1]*/);
+                }
+            }
+
+            return Enumerable.Empty<SourceEntry>();
+        }
+
+        public IEnumerable<SourceEntry> SearchSequence__(List<int> input, int tolerance = 1)
+        {
             var scoreList = new List<int>();
 
             // get file with most continious matches
@@ -132,8 +146,64 @@ namespace CodeRefactoring2.Vsix
             //}
         }
 
+        public static bool IsSubArray(List<int> shortList, List<int> longList, int fitness = 1)
+        {
+            if (longList.Count> shortList.Count)
+            {
+                throw new ArgumentException();
+            }
 
-        public static int PackMan(List<int> x, List<int> y, int fitness = 1)
+            int life = 0;
+
+            int l = 0;
+            int s = 0;
+
+            for (int i = 0; i < longList.Count; i++)
+            {
+                for (int j = 0; j < shortList.Count; j++)
+                {
+                    if (shortList[i] == longList[j]) i++;
+                    else j = 0;
+                }
+                return true;
+            }
+            return false;
+        }
+
+        public static int FindArrayIndex(int[] subArray, int[] parentArray, int err = 1)
+        {
+            if (subArray.Length == 0)
+            {
+                return -1;
+            }
+            int sL = subArray.Length;
+            int l = parentArray.Length - subArray.Length + 1;
+            int k = 0;
+            for (int i = 0; i < l; i++)
+            {
+                if (parentArray[i] == subArray[k] )
+                {
+                    for (int j = 0; j < subArray.Length; j++)
+                    {
+                        if (parentArray[i + j] == subArray[j])
+                        {
+                            sL--;
+                            if (sL == 0)
+                            {
+                                return i;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    
+                }
+            }
+            return -1;
+        }
+
+        public static int PackMan_(List<int> x, List<int> y, int fitness = 1)
         {
             List<int> longList;
             List<int> shortList;

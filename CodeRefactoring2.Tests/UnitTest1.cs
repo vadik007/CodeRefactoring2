@@ -141,10 +141,10 @@ I recommend you launch the debugger in the menu to the left and analyze the data
             }
         }
 
-        [Test]
-        public void TestPackMan()
+        [TestCase(new[]{1,1}, new[] { 3, 1, 1, 3}, true)]
+        public void TestPackMan(int[] x, int[] y, bool isSubSequece)
         {
-            Console.WriteLine(SourceFileHasher.PackMan(new List<int>{1,11},new List<int>{3,1,1,3}));
+            //SourceFileHasher.PackMan(x.ToList() ,y.ToList());
         }
 
         private void PrintSrcFile(string path, int line)
