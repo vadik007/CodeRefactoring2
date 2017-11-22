@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Text.RegularExpressions;
 using System.Xml.Serialization;
 
@@ -51,13 +52,13 @@ namespace CodeRefactoring2.Vsix
                     Entries[sourceEntry.ThisHash].Add(sourceEntry);
                 }
 
-                if (!FileToWordsDictionary.ContainsKey(sourceEntry.FileHash))
+                if (!FilesToTokens.ContainsKey(sourceEntry.FileHash))
                 {
-                    FileToWordsDictionary.Add(sourceEntry.FileHash, new List<int>{sourceEntry.ThisHash});
+                    FilesToTokens.Add(sourceEntry.FileHash, new List<int>{sourceEntry.ThisHash});
                 }
                 else
                 {
-                    FileToWordsDictionary[sourceEntry.FileHash].Add(sourceEntry.ThisHash);
+                    FilesToTokens[sourceEntry.FileHash].Add(sourceEntry.ThisHash);
                 }
             }
 
@@ -78,7 +79,7 @@ namespace CodeRefactoring2.Vsix
             }
 
             [XmlIgnore]
-            public readonly Dictionary<int, List<int>> FileToWordsDictionary = new Dictionary<int, List<int>>();
+            public readonly Dictionary<int, List<int>> FilesToTokens = new Dictionary<int, List<int>>();
 
         }
 
@@ -86,6 +87,7 @@ namespace CodeRefactoring2.Vsix
 
         public SortedDictionary<int, List<SourceEntry>> Entries => PersistencePart.Entries;
         public Dictionary<int, string> FilesDictionary => PersistencePart.FilesDictionary;
+        public Dictionary<int, List<int>> FilesToTokens => PersistencePart.FilesToTokens;
 
 
         SourceFileHasherPersistencePart PersistencePart = new SourceFileHasherPersistencePart();
@@ -98,9 +100,43 @@ namespace CodeRefactoring2.Vsix
         {
         }
 
-        public IEnumerable<SourceEntry> SearchSequence(List<int> input, int tolerance = 1)
+        public class FileEntry
         {
-            foreach (var fileTokenMap in PersistencePart.FileToWordsDictionary)
+            public string Path { set; get; }
+            public int Line { set; get; }
+        }
+
+        public NewSourceEntry SearchNew(List<int> input, Dictionary<int, List<NewSourceEntry>> fileToWordsDictionary)
+        {
+            foreach (var fileTokenMap in fileToWordsDictionary)
+            {
+                var subArray = input.ToArray();
+                var parentArray = fileTokenMap.Value.Select(_=>_.WordHash).ToArray();
+
+                Console.WriteLine("subArray: " + string.Join(", ", subArray));
+                Console.WriteLine("parentArray: " + string.Join(", ", parentArray));
+
+                var entry = FindArrayIndex(subArray, parentArray);
+                if (entry != -1)
+                {
+                    // from entry to factual token position > regex > tokenizer
+
+                    var sourceEntry = fileTokenMap.Value[entry];
+                    Debug.Assert(input[0] == sourceEntry.WordHash);
+                    return sourceEntry;
+                    //return ParseFile(FilesDictionary[fileTokenMap.Key]).Skip(entry).Take(1).FirstOrDefault();
+
+                    //return new FileEntry {Path = FilesDictionary[fileTokenMap.Key], };
+                    //return Entries[input[0]].Where(_ => _.FileHash == entry /*&& _.NextHash == input[1]*/);
+                }
+            }
+
+            return null;
+        }
+
+        public IEnumerable<SourceEntry> SearchSequence(List<int> input, Dictionary<int, List<int>> fileToWordsDictionary)
+        {
+            foreach (var fileTokenMap in fileToWordsDictionary)
             {
                 var entry = FindArrayIndex(input.ToArray(), fileTokenMap.Value.ToArray());
                 if (entry != -1)
@@ -118,7 +154,7 @@ namespace CodeRefactoring2.Vsix
 
             // get file with most continious matches
             //     get with most matches. Files 
-            var step1 = PersistencePart.FileToWordsDictionary
+            var step1 = PersistencePart.FilesToTokens
                 //.GroupBy()
                 .Select(fileData => new {MatchCount = fileData.Value.Intersect(input).Count(), fileData});
             var step2 = step1
@@ -170,6 +206,13 @@ namespace CodeRefactoring2.Vsix
             return false;
         }
 
+        /// <summary>
+        /// https://stackoverflow.com/questions/3940194/find-an-array-inside-another-larger-array
+        /// </summary>
+        /// <param name="subArray"></param>
+        /// <param name="parentArray"></param>
+        /// <param name="err"></param>
+        /// <returns></returns>
         public static int FindArrayIndex(int[] subArray, int[] parentArray, int err = 1)
         {
             if (subArray.Length == 0)
@@ -177,11 +220,14 @@ namespace CodeRefactoring2.Vsix
                 return -1;
             }
             int sL = subArray.Length;
-            int l = parentArray.Length - subArray.Length + 1;
+            int l = parentArray.Length - subArray.Length +1;// +1 
             int k = 0;
             for (int i = 0; i < l; i++)
             {
-                if (parentArray[i] == subArray[k] )
+                var proceed = parentArray[i] == subArray[k];
+                if (!proceed && err > 0) proceed = true; 
+
+                if (proceed)
                 {
                     for (int j = 0; j < subArray.Length; j++)
                     {
@@ -317,6 +363,46 @@ namespace CodeRefactoring2.Vsix
             return quotedString.Substring(1, quotedString.Length - 2);
         }
 
+        public class NewSourceEntry
+        {
+            public int WordHash { get; set; }
+            public int Line { get; set; }
+            public int Position { get; set; }
+        }
+
+        private IEnumerable<NewSourceEntry> ParseFile(string file)
+        {
+            if (!File.Exists(file))
+            {
+                Debug.Write("Can not access {0}", file);
+                yield break;
+            }
+
+            var lines = File.ReadAllLines(file);
+
+            var logTokenizer = new WhiteSpaceLogTokenizer();
+            for (var lineN = 0; lineN < lines.Length; lineN++)
+            {
+                var line = lines[lineN];
+                foreach (Match match in _scopeRegex.Matches(line))
+                {
+                    foreach (var wordHash in logTokenizer.TokenizeLine(RemoveQuotes(match.Value)))
+                    {
+                        yield return new NewSourceEntry {Line = lineN, Position = match.Index, WordHash = wordHash};
+                    }
+                }
+            }
+        }
+
+        public void ProcessFile2(string filePath, Dictionary<int, List<NewSourceEntry>> newDictionary)
+        {
+            int fileHash = filePath.GetHashCode();
+            PersistencePart.FilesDictionary.Add(fileHash, filePath);
+            //int previousHash = 0;
+
+            newDictionary.Add(fileHash, ParseFile(filePath).ToList());
+        }
+
         public void ProcessFile(string filePath)
         {
             if (!File.Exists(filePath))
@@ -339,19 +425,22 @@ namespace CodeRefactoring2.Vsix
                 var line = lines[lineN];
                 foreach (Match match in _scopeRegex.Matches(line))
                 {
-                    var sourceEntry = new SourceEntry(
-                        fileHash: fileHash,
-                        lineNumber: lineN,
-                        lineOffset: match.Index,
-                        thisHash: RemoveQuotes(match.Value).GetHashCode(),
-                        previousHash: prevSourceEntry?.ThisHash ?? 0, // o-0~o
-                        nextHash: 0); // o-0~o
+                    foreach (var token in logTokenizer.TokenizeLine(RemoveQuotes(match.Value)))
+                    {
+                        var sourceEntry = new SourceEntry(
+                            fileHash: fileHash,
+                            lineNumber: lineN,
+                            lineOffset: match.Index,
+                            thisHash: token,
+                            previousHash: prevSourceEntry?.ThisHash ?? 0, // o-0~o
+                            nextHash: 0); // o-0~o
 
-                    if (prevSourceEntry != null) prevSourceEntry.NextHash = sourceEntry.ThisHash; // o-0-o
+                        if (prevSourceEntry != null) prevSourceEntry.NextHash = sourceEntry.ThisHash; // o-0-o
 
-                    AddSourceEntry(sourceEntry);
-                    prevSourceEntry = sourceEntry; // current entry is finished
-                    //match.
+                        AddSourceEntry(sourceEntry);
+                        prevSourceEntry = sourceEntry; // current entry is finished
+                        //match.
+                    }
                 }
             }
         }

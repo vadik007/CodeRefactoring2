@@ -132,7 +132,7 @@ I recommend you launch the debugger in the menu to the left and analyze the data
             {
                 var tokenizedLine = tokenizer.TokenizeLine(logLine);
 
-                var sourceEntries = restoreFileHasher.SearchSequence(tokenizedLine.ToList());
+                var sourceEntries = restoreFileHasher.SearchSequence(tokenizedLine.ToList(), restoreFileHasher.FilesToTokens);
 
                 foreach (var sourceEntry in sourceEntries)
                 {
@@ -145,6 +145,47 @@ I recommend you launch the debugger in the menu to the left and analyze the data
         public void TestPackMan(int[] x, int[] y, bool isSubSequece)
         {
             //SourceFileHasher.PackMan(x.ToList() ,y.ToList());
+        }
+
+        [TestCase(new[] {1, 1}, new[] {3, 1, 1, 3}, 1, TestName = "new[] {1, 1}, new[] {3, 1, 1, 3}, 1")]
+        [TestCase(new[] {-1, 1}, new[] {3, -1, 1, 3}, 1, TestName = "new[] {-1, 1}, new[] {3, -1, 1, 3}, 1")]
+        [TestCase(new[] {3, 4}, new[] {3, 1, 1, 3}, -1, TestName = "new[] {3, 4}, new[] {3, 1, 1, 3}, -1")]
+        [TestCase(new[] {2, -2}, new[] {3, 1, 1, 3, 2, -2}, 4, TestName = "new[] {2, -2}, new[] {3, 1, 1, 3, 2, -2}")]
+        [TestCase(
+            new[] { 133152514, -1184914118, 231732805 },
+            new[] { -871204755, 973381012, 1874483263, 1624877773, 1543969225, 638668808, -676180319, 372029313, -1226285125, 1464456049, 1849315756, 372029313, -1436242094, -1505079682, 1849315756, 372029313, -1226285125, -745902839, -1332314092, -699674396, 648495949, -1850262934, 905413809, -1226284737, 372029336, 1010958237, 648495949, -537263047, 905413809, 2053027190}, -1, TestName = "long test")]
+        public void TestArrInArr(int[] x, int[] y, int idx)
+        {
+            Assert.AreEqual(idx, SourceFileHasher.FindArrayIndex(x, y));
+            if (idx != -1)
+            {
+                Assert.AreEqual(x[0], y[idx]);
+            }
+        }
+
+        [Test]
+        public void TestNew()
+        {
+            var sourceFileHasher = new SourceFileHasher();
+            var tokenDictionary = new Dictionary<int, List<SourceFileHasher.NewSourceEntry>>();
+
+            foreach (var file in Directory.GetFiles(@"D:\CONGEN\cnt\agent-library\", "*.cs", SearchOption.AllDirectories))
+            {
+                sourceFileHasher.ProcessFile2(file, tokenDictionary);
+            }
+
+            var logLines = new string[]{ "AgentHostProcess is started",
+                "Service configured on port 8085 of channel http.Server object created",
+                "Execution steps cache initialized, total 22 item(s)" };
+
+            //var logLines = File.ReadAllLines(TestContext.CurrentContext.TestDirectory +"\\out1.txt");
+
+            var tokenizer = new WhiteSpaceLogTokenizer();
+            foreach (var logLine in logLines)
+            {
+                sourceFileHasher.SearchNew(tokenizer.TokenizeLine(logLine).ToList(), tokenDictionary);
+            }
+
         }
 
         private void PrintSrcFile(string path, int line)
