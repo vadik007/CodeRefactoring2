@@ -113,8 +113,8 @@ namespace CodeRefactoring2.Vsix
                 var subArray = input.ToArray();
                 var parentArray = fileTokenMap.Value.Select(_=>_.WordHash).ToArray();
 
-                Console.WriteLine("subArray: " + string.Join(", ", subArray));
-                Console.WriteLine("parentArray: " + string.Join(", ", parentArray));
+                //Console.WriteLine("subArray: " + string.Join(", ", subArray));
+                //Console.WriteLine("parentArray: " + string.Join(", ", parentArray));
 
                 //var entry = FindArrayIndex(subArray, parentArray);
                 if (subArray.Length > parentArray.Length)
@@ -200,9 +200,19 @@ namespace CodeRefactoring2.Vsix
             int j = 0;
             int backtrack = 0;
 
-            while (i < longList.Count && j < shortList.Count)
+            while (i < longList.Count /*&& j < shortList.Count*/)
             {
-                if (longList[i] != shortList[j]) { j = -1; i -= backtrack; } else { backtrack++; }
+                if (longList[i] == shortList[j])
+                {
+                    backtrack++;
+                }
+                else
+                {
+                    j = -1;
+                    i -= backtrack;
+                    backtrack = 0;
+                    //i+=2;
+                }
                 i++; j++;
                 if (j == shortList.Count) return i - j;
             }
