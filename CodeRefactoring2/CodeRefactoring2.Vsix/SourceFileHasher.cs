@@ -106,7 +106,7 @@ namespace CodeRefactoring2.Vsix
             public int Line { set; get; }
         }
 
-        public NewSourceEntry SearchNew(List<int> input, Dictionary<int, List<NewSourceEntry>> fileToWordsDictionary)
+        public IEnumerable<NewSourceEntry> SearchNew(List<int> input, Dictionary<int, List<NewSourceEntry>> fileToWordsDictionary)
         {
             foreach (var fileTokenMap in fileToWordsDictionary)
             {
@@ -116,14 +116,19 @@ namespace CodeRefactoring2.Vsix
                 Console.WriteLine("subArray: " + string.Join(", ", subArray));
                 Console.WriteLine("parentArray: " + string.Join(", ", parentArray));
 
-                var entry = FindArrayIndex(subArray, parentArray);
-                if (entry != -1)
+                //var entry = FindArrayIndex(subArray, parentArray);
+                if (subArray.Length > parentArray.Length)
+                {
+                    continue;
+                }
+                var entry = IsSubArray(subArray.ToList(), parentArray.ToList());// - 2;
+                if (entry > -1)
                 {
                     // from entry to factual token position > regex > tokenizer
 
                     var sourceEntry = fileTokenMap.Value[entry];
                     Debug.Assert(input[0] == sourceEntry.WordHash);
-                    return sourceEntry;
+                    yield return sourceEntry;
                     //return ParseFile(FilesDictionary[fileTokenMap.Key]).Skip(entry).Take(1).FirstOrDefault();
 
                     //return new FileEntry {Path = FilesDictionary[fileTokenMap.Key], };
@@ -131,7 +136,7 @@ namespace CodeRefactoring2.Vsix
                 }
             }
 
-            return null;
+            yield break;
         }
 
         public IEnumerable<SourceEntry> SearchSequence(List<int> input, Dictionary<int, List<int>> fileToWordsDictionary)
@@ -182,28 +187,26 @@ namespace CodeRefactoring2.Vsix
             //}
         }
 
-        public static bool IsSubArray(List<int> shortList, List<int> longList, int fitness = 1)
+        public static int IsSubArray(List<int> shortList, List<int> longList, int fitness = 1)
         {
-            if (longList.Count> shortList.Count)
+            if (longList.Count < shortList.Count)
             {
                 throw new ArgumentException();
             }
 
             int life = 0;
 
-            int l = 0;
-            int s = 0;
+            int i = 0;
+            int j = 0;
+            int backtrack = 0;
 
-            for (int i = 0; i < longList.Count; i++)
+            while (i < longList.Count && j < shortList.Count)
             {
-                for (int j = 0; j < shortList.Count; j++)
-                {
-                    if (shortList[i] == longList[j]) i++;
-                    else j = 0;
-                }
-                return true;
+                if (longList[i] != shortList[j]) { j = -1; i -= backtrack; } else { backtrack++; }
+                i++; j++;
+                if (j == shortList.Count) return i - j;
             }
-            return false;
+            return -1;
         }
 
         /// <summary>
@@ -368,6 +371,8 @@ namespace CodeRefactoring2.Vsix
             public int WordHash { get; set; }
             public int Line { get; set; }
             public int Position { get; set; }
+
+            public int FileHash { get; set; }
         }
 
         private IEnumerable<NewSourceEntry> ParseFile(string file)
@@ -388,7 +393,7 @@ namespace CodeRefactoring2.Vsix
                 {
                     foreach (var wordHash in logTokenizer.TokenizeLine(RemoveQuotes(match.Value)))
                     {
-                        yield return new NewSourceEntry {Line = lineN, Position = match.Index, WordHash = wordHash};
+                        yield return new NewSourceEntry {Line = lineN, Position = match.Index, WordHash = wordHash, FileHash = file.GetHashCode()};
                     }
                 }
             }
