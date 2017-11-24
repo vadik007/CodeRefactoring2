@@ -19,7 +19,7 @@ namespace CodeRefactoring2.Vsix
         [Import(nameof(VisualStudioWorkspace))]
         public VisualStudioWorkspace MyWorkspace { get; set; }
 
-        public ObservableCollection<string> Items { get; } = new ObservableCollection<string>() { "1", "2", "3" };
+        public ObservableCollection<string> Items { get; } = new ObservableCollection<string> { "1", "2", "3" };
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ToolWindow1Control"/> class.
@@ -40,8 +40,9 @@ namespace CodeRefactoring2.Vsix
         private void button1_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show(AnalyzeLogPackage.Dte.Solution.FileName);
+
             MessageBox.Show(
-                string.Format(System.Globalization.CultureInfo.CurrentUICulture, "Invoked '{0}'. My workspace {1}", this.ToString(), MyWorkspace?.ToString() ?? "Null"),
+                string.Format(System.Globalization.CultureInfo.CurrentUICulture, "Invoked '{0}'. My workspace {1}", ToString(), MyWorkspace?.ToString() ?? "Null"),
                 "ToolWindow1");
         }
     }

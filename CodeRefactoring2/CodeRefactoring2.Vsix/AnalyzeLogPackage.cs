@@ -99,6 +99,13 @@ namespace CodeRefactoring2.Vsix
             return (T)base.GetService(typeof(T));
         }
 
+        public static void GotoLineAtFile(string filename, int line)
+        {
+            //dte2 = (EnvDTE80.DTE2)System.Runtime.InteropServices.Marshal.GetActiveObject("VisualStudio.DTE");
+            //AnalyzeLogPackage.Dte.MainWindow.Activate();
+            Window w = Dte.ItemOperations.OpenFile(filename, EnvDTE.Constants.vsViewKindTextView);
+            ((TextSelection)Dte.ActiveDocument.Selection).GotoLine(line, true);
+        }
         #endregion
     }
 }
