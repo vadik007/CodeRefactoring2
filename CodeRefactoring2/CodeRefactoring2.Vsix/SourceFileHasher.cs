@@ -409,6 +409,14 @@ namespace CodeRefactoring2.Vsix
             }
         }
 
+        public void ProcessDir(string dirPath, Dictionary<int, List<NewSourceEntry>> newDictionary)
+        {
+            foreach (var file in Directory.GetFiles(dirPath, "*.cs", SearchOption.AllDirectories))
+            {
+                ProcessFile2(file, newDictionary);
+            }
+
+        }
         public void ProcessFile2(string filePath, Dictionary<int, List<NewSourceEntry>> newDictionary)
         {
             int fileHash = filePath.GetHashCode();

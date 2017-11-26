@@ -108,6 +108,7 @@
     <Compile Include="AnalyzeLogPackage.cs" />
     <Compile Include="ILogParser.cs" />
     <Compile Include="LinqHelpers.cs" />
+    <Compile Include="LogEntry.cs" />
     <Compile Include="SourceEntry.cs" />
     <Compile Include="ILogTokenizer.cs" />
     <Compile Include="SourceFileHasher.cs" />

@@ -12,11 +12,32 @@
     <Grid>
         <StackPanel Orientation="Vertical">
             <StackPanel Orientation="Horizontal">
-                <Button Content="Load log" Click="button1_Click" Name="button1"/>
-                <Button Content="thing2" Click="button1_Click" Name="button2"/>
+                <Button Content="Load log"  Margin="5" Click="LoadLog" Name="button1"/>
+                <Button Content="Scan Dirs"  Margin="5" Name="button2"/>
             </StackPanel>
             <!--x:Static vsix:ToolWindow1Control-->
-            <ListBox ItemsSource="{Binding Path=Items}" />
+            <DataGrid ItemsSource="{Binding Path=Items}" IsReadOnly="True" Name="LogGrid" >
+                <DataGrid.Columns>
+                    <DataGridHyperlinkColumn Binding="{Binding Path=Message}" ContentBinding="{x:Null}" ClipboardContentBinding="{x:Null}">
+                        <DataGridHyperlinkColumn.ElementStyle>
+                            <Style>
+                                <EventSetter Event="Hyperlink.Click" Handler="DG_Hyperlink_Click"/>
+                            </Style>
+                        </DataGridHyperlinkColumn.ElementStyle>
+                    </DataGridHyperlinkColumn>
+                </DataGrid.Columns>
+                <!--<ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>-->
+    <!--<Style x:Key="Cell" TargetType="{x:Type DataGridCell}">
+        <EventSetter Event="MouseDoubleClick" Handler="DataGridHeader_MouseDoubleClick"/>
+    </Style>-->
+            </DataGrid>
         </StackPanel>
     </Grid>
+
+
 </UserControl>

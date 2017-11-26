@@ -168,7 +168,7 @@ I recommend you launch the debugger in the menu to the left and analyze the data
             var sourceFileHasher = new SourceFileHasher();
             var tokenDictionary = new Dictionary<int, List<SourceFileHasher.NewSourceEntry>>();
 
-            foreach (var file in Directory.GetFiles(@"D:\CONGEN\cnt\agent-library\", "*.cs", SearchOption.AllDirectories))
+            foreach (var file in Directory.GetFiles(@"C:\CONGEN\cnt\agent-library\", "*.cs", SearchOption.AllDirectories))
             {
                 sourceFileHasher.ProcessFile2(file, tokenDictionary);
             }
