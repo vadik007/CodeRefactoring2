@@ -17,7 +17,9 @@ namespace CodeRefactoring2.Vsix
     {
         public IEnumerable<LogEntry> GetItems(string file)
         {
-            return File.ReadLines(file).Select(_=>new LogEntry {Message = _});
+            return File.ReadLines(file)
+                .Where(_ => !string.IsNullOrWhiteSpace(_))
+                .Select(_=>new LogEntry {Message = _});
         }
     }
 

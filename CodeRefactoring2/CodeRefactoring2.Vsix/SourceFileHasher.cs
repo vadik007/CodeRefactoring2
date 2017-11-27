@@ -383,6 +383,11 @@ namespace CodeRefactoring2.Vsix
             public int Position { get; set; }
 
             public int FileHash { get; set; }
+
+            public override string ToString()
+            {
+                return $"{nameof(FileHash)}: {FileHash}, {nameof(WordHash)}: {WordHash}, {nameof(Line)}: {Line}, {nameof(Position)}: {Position}";
+            }
         }
 
         private IEnumerable<NewSourceEntry> ParseFile(string file)

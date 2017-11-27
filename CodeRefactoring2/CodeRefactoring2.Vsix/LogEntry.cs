@@ -13,12 +13,14 @@ namespace CodeRefactoring2.Vsix
                                                       new LogEntry
                                                       {
                                                           Message = "Message1",
-                                                          Properties = new Dictionary<string, object> { {"prop1", 1} }
+                                                          Properties = new Dictionary<string, object> { {"prop1", 1}, {"prop2", 2}}
                                                       },
                                                       new LogEntry
                                                       {
                                                           Message = "Message2",
-                                                          Properties = new Dictionary<string, object> { {"prop1", 1 }}
+                                                          Properties = new Dictionary<string, object> { {"prop1", 1 }, {"prop3", 3}},
+                                                          SourceEntry = new SourceFileHasher.NewSourceEntry
+                                                          { FileHash = 1, Line = 1, Position = 1, WordHash = 3}
                                                       }
                                                   };
     }

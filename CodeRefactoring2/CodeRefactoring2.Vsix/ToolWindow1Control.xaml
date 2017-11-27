@@ -16,7 +16,7 @@
                 <Button Content="Scan Dirs"  Margin="5" Name="button2"/>
             </StackPanel>
             <!--x:Static vsix:ToolWindow1Control-->
-            <DataGrid ItemsSource="{Binding Path=Items}" IsReadOnly="True" Name="LogGrid" >
+            <DataGrid ItemsSource="{Binding Path=Items}" IsReadOnly="True" Name="LogGrid"  EnableRowVirtualization="True">
                 <DataGrid.Columns>
                     <DataGridHyperlinkColumn Binding="{Binding Path=Message}" ContentBinding="{x:Null}" ClipboardContentBinding="{x:Null}">
                         <DataGridHyperlinkColumn.ElementStyle>

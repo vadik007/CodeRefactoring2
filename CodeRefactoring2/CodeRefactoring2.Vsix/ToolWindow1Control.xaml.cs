@@ -17,8 +17,6 @@ namespace CodeRefactoring2.Vsix
     using System.Windows;
     using System.Windows.Controls;
 
-
-
     /// <summary>
     /// Interaction logic for ToolWindow1Control.
     /// </summary>
@@ -63,7 +61,8 @@ namespace CodeRefactoring2.Vsix
             if (openFileDialog.ShowDialog() == true)
             {
                 var dumbLogParser = new DumbLogParser();
-                foreach (var logEntry in dumbLogParser.GetItems(openFileDialog.FileName).Take(10))
+                foreach (var logEntry in dumbLogParser.GetItems(openFileDialog.FileName)
+                    .Take(10))
                 {
                     Items.Add(new LogEntry {Message = logEntry.Message});
                 }
@@ -87,10 +86,16 @@ namespace CodeRefactoring2.Vsix
                 () =>
                     {
                         var tokenizer = new WhiteSpaceLogTokenizer();
-                        foreach (var logEntry in Items)
+                        for (var i = 0; i < Items.Count; i++)
                         {
+                            var logEntry = Items[i];
                             var tokenizedLine = tokenizer.TokenizeLine(logEntry.Message);
-                            logEntry.SourceEntry = _sourceFileHasher.SearchNew(tokenizedLine.ToList(), storeDictionary).FirstOrDefault();
+                            var sourceEntry = _sourceFileHasher.SearchNew(
+                                                         tokenizedLine.ToList(),
+                                                         storeDictionary)
+                                                     .FirstOrDefault();
+
+                            logEntry.SourceEntry = sourceEntry;
                         }
 
                         Console.WriteLine("all done");
